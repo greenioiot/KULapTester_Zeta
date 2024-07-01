@@ -87,6 +87,7 @@ String dateTimeStr = "";
 long timezone = 7;
 byte daysavetime = 0;
 int testCount = 0;
+int loopCount = 0;
 
 unsigned long diffMillis = 0;
 unsigned long diff = 0;
@@ -620,6 +621,9 @@ void configButtonCallback(Control *sender, int type) {
   file += "-1000,-1000,-4\n1000,0,-4\n1000,0,-4\n0,1000,-4\n-1000,0,-4\n-1000,0,-4\n0,1000,-4\n1000,0,-4\n1000,0,-4\nEnd";
   Serial.println(file);
   writeFile(SD, "/test01.config", file.c_str());
+  config.name = name_->value;
+  config.loop = loop_->value.toInt();
+  config.numPos = pos_->value.toInt();
   }
 }
 
@@ -1054,9 +1058,9 @@ void loop() {
   //We don't need to call this explicitly on ESP32 but we do on 8266
   MDNS.update();
 #endif
-  if (isStopStart && (testCount <= config.loop) ) {
-    Serial.print("testCount: ");
-    Serial.println(testCount);
+  if (isStopStart && (loopCount < config.loop) ) {
+    Serial.print("loopCount: ");
+    Serial.println(loopCount);
     Serial.print("Loop: ");
     Serial.println(config.loop);
 
@@ -1149,11 +1153,14 @@ void loop() {
     if (testCount >= config.numPos) {
       testCount = 0;
       moveToStart();
-      isStopStart = false;
+      
     }
+loopCount++;
 
 
-
+  } else {
+    isStopStart = false;
+    loopCount = 0;
   }
   if (millis() % 60000 == 0) {
     //listDir(SD, "/", 0);
